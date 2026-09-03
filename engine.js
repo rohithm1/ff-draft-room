@@ -27,10 +27,11 @@
     benchSlots: 7,
     irSlots: 1,
     points: { passYd:0.04, passTD:4, int:-2, rushYd:0.1, rec:1, recYd:0.1, td:6, fumble:-2 },
-    /* How much each ranking source counts in the board order. Sources are
-       Sep 1 2026 snapshots shipped per player in data.js; missing sources
-       renormalize away. All zeros falls back to the stored order. */
-    rankWeights: { rw:0.35, pfn:0.25, prior:0.20, cbs:0.10, espn:0.10 }
+    /* How much each ranking source counts in the board order. adp is live
+       market data (FantasyFootballCalculator PPR, ~7.8k drafts, Sep 3 2026);
+       the rest are Sep 1 2026 ranking snapshots. All shipped per player in
+       data.js; missing sources renormalize away. All zeros = stored order. */
+    rankWeights: { adp:0.35, rw:0.20, pfn:0.15, prior:0.15, cbs:0.075, espn:0.075 }
   };
   LEAGUE.rounds = LEAGUE.rosterSize;
   LEAGUE.totalPicks = LEAGUE.teams * LEAGUE.rounds;

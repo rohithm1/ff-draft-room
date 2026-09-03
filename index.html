@@ -117,16 +117,18 @@
 
     <h3>Ranking source weights</h3>
     <div class="set-grid">
+      <label>ADP<input type="number" id="wADP" min="0" max="1" step="0.05"></label>
       <label>RotoWire<input type="number" id="wRW" min="0" max="1" step="0.05"></label>
       <label>PFN<input type="number" id="wPFN" min="0" max="1" step="0.05"></label>
       <label>CBS<input type="number" id="wCBS" min="0" max="1" step="0.05"></label>
       <label>ESPN<input type="number" id="wESPN" min="0" max="1" step="0.05"></label>
       <label>This board<input type="number" id="wPrior" min="0" max="1" step="0.05"></label>
     </div>
-    <p class="set-note">Sep 1 2026 snapshots: RotoWire expert consensus, Pro Football Network
-    top 200, CBS top 140, ESPN draft-day ranks, plus this board's hand-tuned August order.
-    Weights renormalize over the sources that cover each player; set a source to 0 to ignore it.
-    All zeros falls back to the stored order.</p>
+    <p class="set-note">ADP is live market data (FantasyFootballCalculator PPR, ~7,800 drafts,
+    Sep 3 2026). The rest are Sep 1 2026 snapshots: RotoWire expert consensus, PFN top 200,
+    CBS top 140, ESPN draft-day ranks, plus this board's hand-tuned August order. Weights
+    renormalize over the sources that cover each player; set a source to 0 to ignore it.
+    Set ADP to 1 and the rest to 0 to rank purely by ADP. All zeros = stored order.</p>
 
     <h3>Scoring</h3>
     <div class="set-grid">

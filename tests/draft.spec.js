@@ -528,3 +528,22 @@ test("clicking a team card inspects its roster, clicking again returns to yours"
   await page.locator('#teams .tm[data-seat="4"]').click();
   await expect(page.locator("#rosterTitle")).toHaveText("You (6)");
 });
+
+test("settings: ADP weight 1 ranks the board purely by market ADP", async ({ page }) => {
+  await page.click("#bSettings");
+  for (const id of ["wRW", "wPFN", "wCBS", "wESPN", "wPrior"]) await page.fill("#" + id, "0");
+  await page.fill("#wADP", "1");
+  await page.click("#bSaveSettings");
+  const r = await page.evaluate(() => {
+    const P = window.__draft.players;
+    const withAdp = P.filter((p) => p.src && p.src.adp !== undefined &&
+                                    p.pos !== "DST" && p.pos !== "K")
+                     .sort((a, b) => a.rank - b.rank);
+    let ordered = true;
+    for (let i = 1; i < withAdp.length; i++)
+      if (withAdp[i].src.adp < withAdp[i - 1].src.adp) ordered = false;
+    return { ordered, first: withAdp[0].name };
+  });
+  expect(r.ordered, "board order matches raw ADP").toBe(true);
+  expect(r.first).toBe("Jahmyr Gibbs");
+});

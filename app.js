@@ -345,7 +345,7 @@
     maxPos:   { QB:"mxQB", RB:"mxRB", WR:"mxWR", TE:"mxTE", K:"mxK", DST:"mxDST" },
     points:   { rec:"pRec", passTD:"pPassTD", td:"pTD", passYd:"pPassYd",
                 rushYd:"pRushYd", recYd:"pRecYd", int:"pInt", fumble:"pFum" },
-    rankWeights: { rw:"wRW", pfn:"wPFN", cbs:"wCBS", espn:"wESPN", prior:"wPrior" }
+    rankWeights: { adp:"wADP", rw:"wRW", pfn:"wPFN", cbs:"wCBS", espn:"wESPN", prior:"wPrior" }
   };
   function fillSettings(cfg) {
     $("sName").value = cfg.name;
