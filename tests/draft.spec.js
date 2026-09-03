@@ -127,16 +127,18 @@ test("top recommendation at 1.01 is a sane, available, high-VOR player", async (
   expect(why.length).toBeGreaterThan(0);
 });
 
-test("the tool's five are hoisted and numbered at the top of the pool", async ({ page }) => {
-  const first = await page.locator("#poolBody tr.rec .pname").first().textContent();
+test("the grid is always in rank order; the tool's five are badged in place", async ({ page }) => {
+  const ranks = await page.evaluate(() =>
+    Array.from(document.querySelectorAll("#poolBody tr.row td:first-child"))
+      .slice(0, 40).map((td) => +td.textContent));
+  const sorted = ranks.slice().sort((a, b) => a - b);
+  expect(ranks, "# column reads in order").toEqual(sorted);
   await expect(page.locator("#poolBody tr.rec")).toHaveCount(5);
+  const first = await page.locator("#poolBody tr.rec .pname").first().textContent();
   await page.locator("#poolBody tr.rec").first().click();      // Team 1 takes the top rec
   await expect(page.locator("#poolBody tr.rec")).toHaveCount(5);
   const next = await page.locator("#poolBody tr.rec .pname").first().textContent();
   expect(next).not.toBe(first);                                // advice recomputed for Team 2
-  // explicit sorts show the plain grid, no hoisting
-  await page.click('th[data-sort="proj"]');
-  await expect(page.locator("#poolBody tr.row").first().locator(".recno")).toHaveCount(0);
 });
 
 /* ---------- the hard one: a complete draft ---------- */

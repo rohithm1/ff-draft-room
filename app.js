@@ -208,11 +208,11 @@
     const taken = takenIds();
     const scoreById = new Map();
     a.rec.list.forEach(function (r) { scoreById.set(r.player.id, r); });
-    // The tool's advice lives IN the grid: the shortlist is hoisted to the top
-    // of the default view and numbered. An explicit sort shows the plain grid.
+    // The tool's advice lives IN the grid as badges on the shortlisted five.
+    // The grid itself is ALWAYS sorted by whatever column says it is — the
+    // rank column must never read 1,2,3,4,8.
     const recIndex = new Map();
     if (!a.c.over) a.rec.short.forEach(function (r, i) { recIndex.set(r.player.id, i + 1); });
-    const hoist = ui.sort === "rank" && ui.dir === 1 && !ui.q && ui.pos === "ALL";
 
     let rows = players.filter(function (p) {
       if (!ui.showGone && taken.has(p.id)) return false;
@@ -231,10 +231,6 @@
         if (key === "pos")     return POS_ORDER.indexOf(p.pos);
         return p[key];
       };
-      if (hoist) {
-        const rx = recIndex.get(x.id) || 99, ry = recIndex.get(y.id) || 99;
-        if (rx !== ry) return rx - ry;
-      }
       const xv = get(x), yv = get(y);
       if (xv < yv) return -dir;
       if (xv > yv) return dir;
