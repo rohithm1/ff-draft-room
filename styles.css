@@ -108,8 +108,6 @@ table.pool tr.row{cursor:pointer}
 table.pool tr.row:hover td{background:var(--surface-2)}
 table.pool tr.row.gone td{opacity:.32}
 table.pool tr.row.gone .pname{text-decoration:line-through}
-table.pool tr.row.rec td{background:var(--accent-soft)}
-table.pool tr.row.rec:hover td{background:var(--accent-soft);filter:brightness(1.04)}
 .recno{
   display:inline-block;min-width:15px;text-align:center;font-family:"IBM Plex Mono",monospace;
   font-size:10px;font-weight:600;color:var(--accent-ink);background:var(--accent);
