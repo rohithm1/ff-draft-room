@@ -195,6 +195,18 @@
     const c = a.c;
     document.getElementById("sPick").textContent = c.over ? "-" : pickLabel(c.overall);
     document.getElementById("sClockV").textContent = c.over ? "Draft complete" : teamName(c.onClock);
+    // Pin a team (click its card in League) to track its next turn up here.
+    const pin = document.getElementById("sPinned");
+    if (state.viewSeat && !c.over) {
+      const next = E.nextPickForSeat(state.viewSeat, c.overall);
+      pin.hidden = false;
+      document.getElementById("sPinnedL").textContent = teamName(state.viewSeat) + " next";
+      pin.querySelector(".v").textContent = next
+        ? "#" + next + (next === c.overall ? "" : " (" + (next - c.overall) + " away)")
+        : "done";
+    } else {
+      pin.hidden = true;
+    }
     document.getElementById("bUndo").disabled = state.picks.length === 0;
     document.getElementById("bAuto").disabled = c.over;
   }

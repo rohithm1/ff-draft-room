@@ -500,3 +500,15 @@ test("settings: source weights re-rank the board without touching picks", async 
   expect(r.picks).toBe(1);
   expect(r.first).toBe("Jahmyr Gibbs");
 });
+
+test("pinning a team tracks its roster and its next pick", async ({ page }) => {
+  await page.locator('#teams .tm[data-seat="4"]').click();
+  await expect(page.locator("#sPinned")).toBeVisible();
+  await expect(page.locator("#sPinnedL")).toHaveText("Team 4 next");
+  await expect(page.locator("#sPinnedV")).toHaveText("#4 (3 away)");
+  await expect(page.locator("#rosterTitle")).toHaveText("Team 4");
+  await page.click("#bAuto");                                   // clock moves, pin holds
+  await expect(page.locator("#sPinnedV")).toHaveText("#4 (2 away)");
+  await page.locator('#teams .tm[data-seat="4"]').click();      // unpin -> follow the clock
+  await expect(page.locator("#sPinned")).toBeHidden();
+});
