@@ -176,7 +176,8 @@
   const hooks = { teamName: null, afterRender: [] };
   const teamName = function (seat) {
     const n = hooks.teamName && hooks.teamName(seat);
-    return n || "Team " + seat;
+    if (n) return n;
+    return seat === L.mySeat ? "You (" + seat + ")" : "Team " + seat;
   };
 
   /* ---------------- render ---------------- */
@@ -195,18 +196,10 @@
     const c = a.c;
     document.getElementById("sPick").textContent = c.over ? "-" : pickLabel(c.overall);
     document.getElementById("sClockV").textContent = c.over ? "Draft complete" : teamName(c.onClock);
-    // Pin a team (click its card in League) to track its next turn up here.
-    const pin = document.getElementById("sPinned");
-    if (state.viewSeat && !c.over) {
-      const next = E.nextPickForSeat(state.viewSeat, c.overall);
-      pin.hidden = false;
-      document.getElementById("sPinnedL").textContent = teamName(state.viewSeat) + " next";
-      pin.querySelector(".v").textContent = next
-        ? "#" + next + (next === c.overall ? "" : " (" + (next - c.overall) + " away)")
-        : "done";
-    } else {
-      pin.hidden = true;
-    }
+    const myNext = c.over ? null : E.nextPickForSeat(L.mySeat, c.overall);
+    document.getElementById("sNext").textContent = myNext
+      ? "#" + myNext + (myNext === c.overall ? "" : " (" + (myNext - c.overall) + " away)")
+      : "-";
     document.getElementById("bUndo").disabled = state.picks.length === 0;
     document.getElementById("bAuto").disabled = c.over;
   }
@@ -276,7 +269,7 @@
   }
 
   function renderRoster(a) {
-    const seat = state.viewSeat || a.c.onClock || L.teams;
+    const seat = state.viewSeat || L.mySeat;
     const ps = seatPlayers(seat);
     document.getElementById("rosterTitle").textContent = teamName(seat);
     document.getElementById("rosterSub").textContent =
@@ -312,8 +305,8 @@
   function renderTeams(a) {
     const c = a.c;
     document.getElementById("leagueSub").innerHTML =
-      L.teams + " teams &middot; click a team to pin its roster";
-    const viewed = state.viewSeat || c.onClock;
+      "you are seat " + L.mySeat + " &middot; click a team to view its roster";
+    const viewed = state.viewSeat || L.mySeat;
     let html = "";
     for (let seat = 1; seat <= L.teams; seat++) {
       const ps = seatPlayers(seat);
@@ -361,6 +354,7 @@
   function fillSettings(cfg) {
     $("sName").value = cfg.name;
     $("sTeams").value = cfg.teams;
+    $("sSeat").value = cfg.mySeat;
     $("sRoster").value = cfg.rosterSize;
     $("sSF").checked = !!cfg.superflex;
     for (const group in CFG_FIELDS)
@@ -369,7 +363,7 @@
   function readSettings() {
     const cfg = {
       name: $("sName").value.trim(),
-      teams: +$("sTeams").value,
+      teams: +$("sTeams").value, mySeat: +$("sSeat").value,
       rosterSize: +$("sRoster").value, superflex: $("sSF").checked
     };
     for (const group in CFG_FIELDS) cfg[group] = {};

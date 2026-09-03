@@ -19,6 +19,7 @@
     name: "NY League 2026",
     teams: 12,
     rosterSize: 16,
+    mySeat: 6,                       // which seat YOU hold; advice itself stays seat-agnostic
     starters: { QB:1, RB:2, WR:2, TE:1, FLEX:1, K:1, DST:1 },
     superflex: false,
     flexEligible: ["RB","WR","TE"],
@@ -572,6 +573,7 @@
     const S = LEAGUE.starters;
     LEAGUE.starterCount = S.QB + S.RB + S.WR + S.TE + S.FLEX + S.K + S.DST;
     LEAGUE.rosterSize = num(cfg.rosterSize, LEAGUE.starterCount, 24, Math.max(LEAGUE.rosterSize, LEAGUE.starterCount));
+    LEAGUE.mySeat = num(cfg.mySeat, 1, LEAGUE.teams, Math.min(LEAGUE.mySeat, LEAGUE.teams));
     LEAGUE.rounds = LEAGUE.rosterSize;
     LEAGUE.totalPicks = LEAGUE.teams * LEAGUE.rounds;
     LEAGUE.benchSlots = LEAGUE.rosterSize - LEAGUE.starterCount;
@@ -611,7 +613,7 @@
   }
   function getConfig() {
     return JSON.parse(JSON.stringify({
-      name: LEAGUE.name, teams: LEAGUE.teams,
+      name: LEAGUE.name, teams: LEAGUE.teams, mySeat: LEAGUE.mySeat,
       rosterSize: LEAGUE.rosterSize, starters: LEAGUE.starters,
       maxPos: LEAGUE.maxPos, points: LEAGUE.points, superflex: LEAGUE.superflex,
       rankWeights: LEAGUE.rankWeights

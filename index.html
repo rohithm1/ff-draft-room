@@ -16,7 +16,7 @@
     <div class="stat brand"><span class="l">NY League 2026</span><span class="v">Draft Room</span></div>
     <div class="stat"><span class="l">Pick</span><span class="v mono" id="sPick">1.01</span></div>
     <div class="stat clock" id="sClock"><span class="l">On the clock</span><span class="v" id="sClockV">Team 1</span></div>
-    <div class="stat" id="sPinned" hidden><span class="l" id="sPinnedL">Pinned</span><span class="v mono" id="sPinnedV"></span></div>
+    <div class="stat"><span class="l">Your next</span><span class="v mono" id="sNext">-</span></div>
     <div class="actions">
       <button class="btn primary" id="bAuto" title="Let the bot make this pick">Autopick</button>
       <button class="btn" id="bUndo">Undo</button>
@@ -85,9 +85,10 @@
   <form method="dialog">
     <h2>League settings</h2>
 
-    <div class="set-grid three">
+    <div class="set-grid four">
       <label>League name<input type="text" id="sName"></label>
       <label>Teams<input type="number" id="sTeams" min="2" max="16"></label>
+      <label>Your seat<input type="number" id="sSeat" min="1" max="16"></label>
       <label>Roster size<input type="number" id="sRoster" min="7" max="24"></label>
     </div>
 

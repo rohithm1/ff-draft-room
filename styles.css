@@ -172,7 +172,7 @@ dialog#dSettings::backdrop{background:rgba(10,14,12,.55)}
   text-transform:uppercase;color:var(--ink-3);margin:16px 0 7px;
 }
 .set-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(72px,1fr));gap:8px}
-.set-grid.three{grid-template-columns:2fr 1fr 1fr}
+.set-grid.four{grid-template-columns:2fr 1fr 1fr 1fr}
 .set-grid label{display:grid;gap:3px;font-family:"IBM Plex Mono",monospace;
   font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
 .set-grid input[type=number],.set-grid input[type=text]{

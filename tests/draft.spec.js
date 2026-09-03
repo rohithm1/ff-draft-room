@@ -501,14 +501,28 @@ test("settings: source weights re-rank the board without touching picks", async 
   expect(r.first).toBe("Jahmyr Gibbs");
 });
 
-test("pinning a team tracks its roster and its next pick", async ({ page }) => {
+test("your seat drives the header and the default roster", async ({ page }) => {
+  await expect(page.locator("#sNext")).toHaveText("#6 (5 away)");
+  await expect(page.locator("#rosterTitle")).toHaveText("You (6)");
+  await page.click("#bAuto");
+  await expect(page.locator("#sNext")).toHaveText("#6 (4 away)");
+  await expect(page.locator("#rosterTitle")).toHaveText("You (6)");   // roster stays yours
+});
+
+test("changing your seat in settings retargets the product", async ({ page }) => {
+  await page.click("#bSettings");
+  await page.fill("#sSeat", "1");
+  await page.click("#bSaveSettings");
+  await expect(page.locator("#sNext")).toHaveText("#1");              // on the clock right now
+  await expect(page.locator("#sClockV")).toHaveText("You (1)");
+  await expect(page.locator("#rosterTitle")).toHaveText("You (1)");
+  await expect(page.locator("#leagueSub")).toContainText("you are seat 1");
+});
+
+test("clicking a team card inspects its roster, clicking again returns to yours", async ({ page }) => {
   await page.locator('#teams .tm[data-seat="4"]').click();
-  await expect(page.locator("#sPinned")).toBeVisible();
-  await expect(page.locator("#sPinnedL")).toHaveText("Team 4 next");
-  await expect(page.locator("#sPinnedV")).toHaveText("#4 (3 away)");
   await expect(page.locator("#rosterTitle")).toHaveText("Team 4");
-  await page.click("#bAuto");                                   // clock moves, pin holds
-  await expect(page.locator("#sPinnedV")).toHaveText("#4 (2 away)");
-  await page.locator('#teams .tm[data-seat="4"]').click();      // unpin -> follow the clock
-  await expect(page.locator("#sPinned")).toBeHidden();
+  await expect(page.locator("#rosterSub")).toContainText("pinned");
+  await page.locator('#teams .tm[data-seat="4"]').click();
+  await expect(page.locator("#rosterTitle")).toHaveText("You (6)");
 });
