@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NY League Draft Assistant</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="status">
+  <div class="status-in">
+    <div class="stat brand"><span class="l">NY League 2026</span><span class="v">Draft Room</span></div>
+    <div class="stat"><span class="l">Pick</span><span class="v mono" id="sPick">1.01</span></div>
+    <div class="stat clock" id="sClock"><span class="l">On the clock</span><span class="v" id="sClockV">Team 1</span></div>
+    <div class="actions">
+      <button class="btn primary" id="bAuto" title="Let the bot make this pick">Autopick</button>
+      <button class="btn" id="bUndo">Undo</button>
+      <button class="btn danger" id="bReset">Reset</button>
+      <button class="btn" id="bSettings" title="League settings">&#9881; Settings</button>
+    </div>
+  </div>
+</header>
+
+<div class="page">
+  <div class="stack">
+
+    <section class="panel">
+      <div class="panel-h">
+        <h2>Player pool</h2>
+        <span class="sub" id="poolSub"></span>
+      </div>
+      <div class="toolbar">
+        <input type="search" id="q" placeholder="Search players&hellip;" aria-label="Search players">
+        <button class="chip" data-pos="ALL" aria-pressed="true">ALL</button>
+        <button class="chip" data-pos="QB" aria-pressed="false">QB</button>
+        <button class="chip" data-pos="RB" aria-pressed="false">RB</button>
+        <button class="chip" data-pos="WR" aria-pressed="false">WR</button>
+        <button class="chip" data-pos="TE" aria-pressed="false">TE</button>
+        <button class="chip" data-pos="K" aria-pressed="false">K</button>
+        <button class="chip" data-pos="DST" aria-pressed="false">D/ST</button>
+        <button class="btn" id="bShowGone">Show drafted</button>
+      </div>
+      <div class="scroll">
+        <table class="pool">
+          <thead>
+            <tr>
+              <th class="l" data-sort="rank">#</th>
+              <th class="l" data-sort="pos">Pos</th>
+              <th class="l" data-sort="name">Player</th>
+              <th class="l">Tm</th>
+              <th data-sort="bye">Bye</th>
+              <th data-sort="proj">Proj</th>
+            </tr>
+          </thead>
+          <tbody id="poolBody"></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <aside class="stack">
+    <section class="panel">
+      <div class="panel-h"><h2 id="rosterTitle">Roster</h2><span class="sub" id="rosterSub"></span></div>
+      <div class="slots" id="slots"></div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-h"><h2>League</h2><span class="sub" id="leagueSub"></span></div>
+      <div class="teams" id="teams"></div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-h"><h2>Pick log</h2><span class="sub" id="logSub">0 picks</span></div>
+      <div class="log" id="log"></div>
+    </section>
+  </aside>
+</div>
+
+<dialog id="dSettings">
+  <form method="dialog">
+    <h2>League settings</h2>
+
+    <div class="set-grid three">
+      <label>League name<input type="text" id="sName"></label>
+      <label>Teams<input type="number" id="sTeams" min="2" max="16"></label>
+      <label>Roster size<input type="number" id="sRoster" min="7" max="24"></label>
+    </div>
+
+    <h3>Starting lineup</h3>
+    <div class="set-grid">
+      <label>QB<input type="number" id="stQB" min="0" max="4"></label>
+      <label>RB<input type="number" id="stRB" min="0" max="4"></label>
+      <label>WR<input type="number" id="stWR" min="0" max="4"></label>
+      <label>TE<input type="number" id="stTE" min="0" max="4"></label>
+      <label>FLEX<input type="number" id="stFLEX" min="0" max="4"></label>
+      <label>K<input type="number" id="stK" min="0" max="4"></label>
+      <label>D/ST<input type="number" id="stDST" min="0" max="4"></label>
+      <label class="check"><input type="checkbox" id="sSF"> Superflex (QB in FLEX)</label>
+    </div>
+    <p class="set-note">Bench = roster size &minus; starters. Rounds = roster size.</p>
+
+    <h3>Position maximums</h3>
+    <div class="set-grid">
+      <label>QB<input type="number" id="mxQB" min="0" max="10"></label>
+      <label>RB<input type="number" id="mxRB" min="0" max="10"></label>
+      <label>WR<input type="number" id="mxWR" min="0" max="10"></label>
+      <label>TE<input type="number" id="mxTE" min="0" max="10"></label>
+      <label>K<input type="number" id="mxK" min="0" max="10"></label>
+      <label>D/ST<input type="number" id="mxDST" min="0" max="10"></label>
+    </div>
+
+    <h3>Ranking source weights</h3>
+    <div class="set-grid">
+      <label>RotoWire<input type="number" id="wRW" min="0" max="1" step="0.05"></label>
+      <label>PFN<input type="number" id="wPFN" min="0" max="1" step="0.05"></label>
+      <label>CBS<input type="number" id="wCBS" min="0" max="1" step="0.05"></label>
+      <label>ESPN<input type="number" id="wESPN" min="0" max="1" step="0.05"></label>
+      <label>This board<input type="number" id="wPrior" min="0" max="1" step="0.05"></label>
+    </div>
+    <p class="set-note">Sep 1 2026 snapshots: RotoWire expert consensus, Pro Football Network
+    top 200, CBS top 140, ESPN draft-day ranks, plus this board's hand-tuned August order.
+    Weights renormalize over the sources that cover each player; set a source to 0 to ignore it.
+    All zeros falls back to the stored order.</p>
+
+    <h3>Scoring</h3>
+    <div class="set-grid">
+      <label>Per reception<input type="number" id="pRec" step="0.5"></label>
+      <label>Pass TD<input type="number" id="pPassTD" step="1"></label>
+      <label>Rush/rec TD<input type="number" id="pTD" step="1"></label>
+      <label>Per pass yd<input type="number" id="pPassYd" step="0.01"></label>
+      <label>Per rush yd<input type="number" id="pRushYd" step="0.01"></label>
+      <label>Per rec yd<input type="number" id="pRecYd" step="0.01"></label>
+      <label>Interception<input type="number" id="pInt" step="1"></label>
+      <label>Fumble lost<input type="number" id="pFum" step="1"></label>
+    </div>
+    <p class="set-note">Scoring re-weights <em>positions</em> (a representative season line valued
+    under your points vs the defaults) — it does not re-project individual players.
+    K and D/ST point details do not move rankings.</p>
+
+    <div class="set-actions">
+      <button type="button" class="btn" id="bFactory">NY league defaults</button>
+      <span style="flex:1"></span>
+      <button value="cancel" class="btn" formnovalidate>Cancel</button>
+      <button value="save" class="btn primary" id="bSaveSettings">Save</button>
+    </div>
+  </form>
+</dialog>
+
+<script src="data.js"></script>
+<script src="engine.js"></script>
+<script src="app.js"></script>
+<script src="replay.js"></script><!-- optional: a recorded draft drops in as a plugin; absent in the public build -->
+</body>
+</html>

@@ -1,0 +1,10 @@
+node_modules/
+test-results/
+playwright-report/
+*.bak*
+.DS_Store
+nohup.out
+.vercel
+# one real league's draft + team names — keep out of the public repo
+replay.js
+tests/replay.spec.js
