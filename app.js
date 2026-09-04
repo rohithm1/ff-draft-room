@@ -1,11 +1,11 @@
-/* NY League draft assistant — UI + state. */
+/* Draft room — UI + state. */
 (function () {
   "use strict";
   const E = window.Engine;
   const L = E.LEAGUE;
   const KEY = "ny-league-draft-v4";   // v4: player ids are file-stable, old rank-based saves are invalid
   const CFG_KEY = "ny-league-config-v1";
-  const FACTORY = E.getConfig();           // pristine NY defaults, captured before any stored config applies
+  const FACTORY = E.getConfig();           // pristine defaults, captured before any stored config applies
   const POS_ORDER = ["QB", "RB", "WR", "TE", "K", "DST"];
 
   let state = { picks: [], custom: [], replay: false, viewSeat: null };

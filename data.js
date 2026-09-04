@@ -1,4 +1,4 @@
-/* NY League 2026 — player pool, tiers, byes.
+/* 2026 player pool, tiers, byes.
    Ranks: weighted consensus, Sep 1 2026. RotoWire expert consensus 0.35,
    Pro Football Network top 200 0.25, prior board 0.20, CBS top 140 0.10,
    ESPN draft-day rank 0.10 (deliberately low). Re-sorted for THIS league:

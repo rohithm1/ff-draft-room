@@ -1,7 +1,7 @@
-# NY League Draft Assistant
+# Draft Room
 
-A local draft board for the 2026 NY League: **12 teams, full PPR, snake, you are
-seat 6.** You log every pick as it happens, and it tells you who to take.
+A draft board. Default configuration: **12 teams, full PPR, snake** — every bit
+of it (teams, seat, roster shape, scoring, ranking weights) adjustable in Settings. You log every pick as it happens, and it tells you who to take.
 
 ```bash
 ./start.sh          # serves on 127.0.0.1:8777 and opens the browser

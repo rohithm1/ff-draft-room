@@ -12,11 +12,12 @@
 })(typeof self !== "undefined" ? self : this, function (BYES, TIERS, RAW_PLAYERS) {
 
   /* ---------- league configuration ----------
-     Everything below is the NY-league DEFAULT. configure(cfg) rewrites the
+     Everything below is the default league shape (12-team full PPR, the
+     common ESPN configuration). configure(cfg) rewrites the
      whole derived layer (replacement ranks, need curves, lineup template,
      scoring scales) so the same engine serves any roster shape. */
   const LEAGUE = {
-    name: "NY League 2026",
+    name: "My League",
     teams: 12,
     rosterSize: 16,
     mySeat: 6,                       // which seat YOU hold; advice itself stays seat-agnostic
@@ -348,7 +349,7 @@
   }
 
   /* How far off board order the other managers pick, as a function of how
-     deep into the draft we are. Calibrated on the real NY league draft:
+     deep into the draft we are. Calibrated on a real 12-team draft:
      round 1 picks averaged 0.9 slots off the board, rounds 2-5 about 4,
      rounds 6-10 about 11. Exponential weights with parameter lambda have a
      mean displacement of roughly lambda. */
@@ -552,7 +553,7 @@
 
   /* ---------- configuration ----------
      Rewrites LEAGUE and every table derived from it, in place, so live
-     references stay valid. Passing {} re-derives the NY-league defaults. */
+     references stay valid. Passing {} re-derives the defaults. */
   function configure(cfg) {
     cfg = cfg || {};
     const num = (v, lo, hi, dflt) => {
