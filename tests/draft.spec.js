@@ -564,3 +564,17 @@ test("settings: half PPR ranks off the half-PPR sources, and reverts cleanly", a
     window.__draft.players.slice(0, 60).map((p) => p.name).join("|"));
   expect(back, "toggling back restores the full-PPR board exactly").toBe(ppr);
 });
+
+test("settings shows the blend behind the board and swaps it with the format", async ({ page }) => {
+  await page.click("#bSettings");
+  await expect(page.locator("#srcFor")).toHaveText("· full PPR");
+  const ppr = await page.locator("#srcWeights .sname").allInnerTexts();
+  expect(ppr[0]).toBe("Market ADP");                       // heaviest source first
+  expect(ppr).toContain("ESPN");
+  await expect(page.locator("#srcWeights .sval").first()).toHaveText("35%");
+  await page.selectOption("#sFormat", "half");             // updates live, before saving
+  await expect(page.locator("#srcFor")).toHaveText("· half PPR");
+  const half = await page.locator("#srcWeights .sname").allInnerTexts();
+  expect(half).toEqual(["Market ADP", "FFC board", "RotoWire"]);
+  await expect(page.locator("#srcNote")).toContainText("fixed for now");
+});

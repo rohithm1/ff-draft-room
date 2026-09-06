@@ -346,12 +346,41 @@
     points:   { passTD:"pPassTD", td:"pTD", passYd:"pPassYd",
                 rushYd:"pRushYd", recYd:"pRecYd", int:"pInt", fumble:"pFum" }
   };
+  const SOURCE_LABEL = {
+    adp:   "Market ADP",
+    rw:    "RotoWire",
+    pfn:   "Pro Football Network",
+    cbs:   "CBS",
+    espn:  "ESPN",
+    prior: "This board",
+    ffc:   "FFC board"
+  };
+  /* The blend behind the board, for whichever format is selected in the dialog.
+     Shown as composition rather than as inputs: these weights are fixed for now
+     and the reception format is the live control, so editable boxes here would
+     be controls that do nothing. */
+  function renderSources(format) {
+    const w = E.SOURCE_WEIGHTS[format] || E.SOURCE_WEIGHTS.ppr;
+    const rows = Object.keys(w).sort(function (a, b) { return w[b] - w[a]; });
+    $("srcFor").textContent = format === "half" ? "· half PPR" : "· full PPR";
+    $("srcWeights").innerHTML = rows.map(function (k) {
+      const pct = Math.round(w[k] * 100);
+      return '<div class="src"><span class="sname">' + esc(SOURCE_LABEL[k] || k) + "</span>" +
+        '<span class="sbar"><i style="width:' + Math.round(pct * 2.2) + '%"></i></span>' +
+        '<span class="sval mono">' + pct + "%</span></div>";
+    }).join("");
+    $("srcNote").textContent = format === "half"
+      ? "Half-PPR consensus, ~200 players deep; anyone past that keeps his full-PPR blend. Weights are fixed for now — the reception format is what changes the board."
+      : "Full-PPR consensus. Weights are fixed for now — the reception format is what changes the board.";
+  }
+
   function fillSettings(cfg) {
     $("sName").value = cfg.name;
     $("sTeams").value = cfg.teams;
     $("sSeat").value = cfg.mySeat;
     $("sRoster").value = cfg.rosterSize;
     $("sFormat").value = cfg.format;
+    renderSources(cfg.format);
     $("sSF").checked = !!cfg.superflex;
     for (const group in CFG_FIELDS)
       for (const k in CFG_FIELDS[group]) $(CFG_FIELDS[group][k]).value = cfg[group][k];
@@ -396,6 +425,7 @@
       $("dSettings").showModal();
     });
     $("bFactory").addEventListener("click", function () { fillSettings(FACTORY); });
+    $("sFormat").addEventListener("change", function () { renderSources($("sFormat").value); });
     // Applied synchronously on the click — the dialog's close event fires in a
     // queued task, which is too late for anything reading state right after.
     $("bSaveSettings").addEventListener("click", function (e) {

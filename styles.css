@@ -185,5 +185,12 @@ dialog#dSettings::backdrop{background:rgba(10,14,12,.55)}
 }
 .set-grid label.check{grid-column:1/-1;display:flex;align-items:center;gap:7px;
   text-transform:none;font-size:12px;font-family:"IBM Plex Sans",sans-serif;color:var(--ink-2)}
+.srcs{display:grid;gap:4px}
+.src{display:grid;grid-template-columns:11rem 1fr 2.6rem;gap:8px;align-items:center;font-size:12px}
+.src .sname{color:var(--ink-2)}
+.src .sbar{height:5px;background:var(--surface-3);border-radius:1px;overflow:hidden}
+.src .sbar i{display:block;height:100%;background:var(--accent)}
+.src .sval{color:var(--ink-3);font-size:10.5px;text-align:right}
+#srcFor{font-size:9.5px;letter-spacing:.08em;color:var(--ink-3)}
 .set-note{font-size:11.5px;color:var(--ink-3);margin:7px 0 0;line-height:1.5}
 .set-actions{display:flex;gap:8px;margin-top:18px;align-items:center}
