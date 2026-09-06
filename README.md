@@ -114,14 +114,23 @@ banner, and styles. Without the file, none of this exists. With it:
 
 `node -e 'require("./engine.js")'` style replays are in `tests/draft.spec.js`.
 
-## Board order: weighted source blend
+## Board order: one ranking set per scoring format
 
-Every skill player carries the ranks the sources gave him (`data.js`, 8th field):
-RotoWire expert consensus, Pro Football Network top 200, CBS top 140, ESPN
-draft-day rank, and this board's hand-tuned August order — Sep 1 2026 snapshots.
-The board you see is the weighted average, renormalized over whichever sources
-cover each player. Adjust the weights in Settings; player ids are stable, so
-re-weighting never breaks logged picks.
+Every skill player carries two sets of source ranks in `data.js`:
+
+- **8th field, full PPR** — market ADP (FantasyFootballCalculator PPR, ~7.8k
+  drafts), RotoWire expert consensus, PFN top 200, CBS top 140, ESPN draft-day
+  rank, and this board's hand-tuned August order.
+- **9th field, half PPR** — FFC half-PPR ADP (~2.9k drafts), FFC's half-PPR
+  board, RotoWire half-PPR. Coverage runs ~200 deep; past that a player falls
+  back to his full-PPR blend.
+
+The **Receptions** setting picks the set, so it moves the board *and* the
+projections together (half PPR: Derrick Henry 16 → 10, Brock Bowers 26 → 36).
+Each set is a weighted average renormalized over whichever sources cover the
+player; the weights live in `SOURCE_WEIGHTS` in `engine.js` and are not yet
+exposed in the UI. Player ids are stable, so switching format never disturbs
+logged picks.
 
 ## Deploying
 

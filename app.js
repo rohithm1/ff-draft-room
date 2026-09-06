@@ -343,15 +343,15 @@
   const CFG_FIELDS = {
     starters: { QB:"stQB", RB:"stRB", WR:"stWR", TE:"stTE", FLEX:"stFLEX", K:"stK", DST:"stDST" },
     maxPos:   { QB:"mxQB", RB:"mxRB", WR:"mxWR", TE:"mxTE", K:"mxK", DST:"mxDST" },
-    points:   { rec:"pRec", passTD:"pPassTD", td:"pTD", passYd:"pPassYd",
-                rushYd:"pRushYd", recYd:"pRecYd", int:"pInt", fumble:"pFum" },
-    rankWeights: { adp:"wADP", rw:"wRW", pfn:"wPFN", cbs:"wCBS", espn:"wESPN", prior:"wPrior" }
+    points:   { passTD:"pPassTD", td:"pTD", passYd:"pPassYd",
+                rushYd:"pRushYd", recYd:"pRecYd", int:"pInt", fumble:"pFum" }
   };
   function fillSettings(cfg) {
     $("sName").value = cfg.name;
     $("sTeams").value = cfg.teams;
     $("sSeat").value = cfg.mySeat;
     $("sRoster").value = cfg.rosterSize;
+    $("sFormat").value = cfg.format;
     $("sSF").checked = !!cfg.superflex;
     for (const group in CFG_FIELDS)
       for (const k in CFG_FIELDS[group]) $(CFG_FIELDS[group][k]).value = cfg[group][k];
@@ -360,7 +360,8 @@
     const cfg = {
       name: $("sName").value.trim(),
       teams: +$("sTeams").value, mySeat: +$("sSeat").value,
-      rosterSize: +$("sRoster").value, superflex: $("sSF").checked
+      rosterSize: +$("sRoster").value, superflex: $("sSF").checked,
+      format: $("sFormat").value
     };
     for (const group in CFG_FIELDS) cfg[group] = {};
     for (const group in CFG_FIELDS)

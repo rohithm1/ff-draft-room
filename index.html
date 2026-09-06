@@ -116,24 +116,14 @@
       <label>D/ST<input type="number" id="mxDST" min="0" max="10"></label>
     </div>
 
-    <h3>Ranking source weights</h3>
-    <div class="set-grid">
-      <label>ADP<input type="number" id="wADP" min="0" max="1" step="0.05"></label>
-      <label>RotoWire<input type="number" id="wRW" min="0" max="1" step="0.05"></label>
-      <label>PFN<input type="number" id="wPFN" min="0" max="1" step="0.05"></label>
-      <label>CBS<input type="number" id="wCBS" min="0" max="1" step="0.05"></label>
-      <label>ESPN<input type="number" id="wESPN" min="0" max="1" step="0.05"></label>
-      <label>This board<input type="number" id="wPrior" min="0" max="1" step="0.05"></label>
-    </div>
-    <p class="set-note">ADP is live market data (FantasyFootballCalculator PPR, ~7,800 drafts,
-    Sep 3 2026). The rest are Sep 1 2026 snapshots: RotoWire expert consensus, PFN top 200,
-    CBS top 140, ESPN draft-day ranks, plus this board's hand-tuned August order. Weights
-    renormalize over the sources that cover each player; set a source to 0 to ignore it.
-    Set ADP to 1 and the rest to 0 to rank purely by ADP. All zeros = stored order.</p>
-
     <h3>Scoring</h3>
     <div class="set-grid">
-      <label>Per reception<input type="number" id="pRec" step="0.5"></label>
+      <label class="wide">Receptions
+        <select id="sFormat">
+          <option value="ppr">Full PPR — 1 pt per catch</option>
+          <option value="half">Half PPR — 0.5 per catch</option>
+        </select>
+      </label>
       <label>Pass TD<input type="number" id="pPassTD" step="1"></label>
       <label>Rush/rec TD<input type="number" id="pTD" step="1"></label>
       <label>Per pass yd<input type="number" id="pPassYd" step="0.01"></label>
@@ -142,9 +132,13 @@
       <label>Interception<input type="number" id="pInt" step="1"></label>
       <label>Fumble lost<input type="number" id="pFum" step="1"></label>
     </div>
-    <p class="set-note">Scoring re-weights <em>positions</em> (a representative season line valued
-    under your points vs the defaults) — it does not re-project individual players.
-    K and D/ST point details do not move rankings.</p>
+    <p class="set-note">The reception setting swaps the whole board: full PPR ranks off a
+    RotoWire/PFN/CBS/ESPN + market-ADP blend, half PPR off a separate half-PPR consensus
+    (FantasyFootballCalculator ADP and board, RotoWire half-PPR) — running backs rise,
+    target-volume receivers and tight ends fall. The other point values re-weight
+    <em>positions</em> in the projections (a representative season line scored under your
+    settings); they do not re-project individual players, and K/D-ST details do not move
+    rankings.</p>
 
     <div class="set-actions">
       <button type="button" class="btn" id="bFactory">Reset to defaults</button>

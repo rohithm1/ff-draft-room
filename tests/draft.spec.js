@@ -474,33 +474,41 @@ test("settings: a league without K/D-ST slots never wants either", async ({ page
 test("settings persist across a reload", async ({ page }) => {
   await page.click("#bSettings");
   await page.fill("#sName", "Test League");
-  await page.fill("#wPFN", "1");
+  await page.selectOption("#sFormat", "half");
   await page.click("#bSaveSettings");
   await page.reload();
   await page.waitForFunction(() => !!window.__draft);
   await expect(page.locator(".stat.brand .l")).toHaveText("Test League");
   const cfg = await page.evaluate(() => window.__draft.E.getConfig());
   expect(cfg.name).toBe("Test League");
-  expect(cfg.rankWeights.pfn).toBe(1);
+  expect(cfg.format).toBe("half");
 });
 
-test("settings: source weights re-rank the board without touching picks", async ({ page }) => {
+test("settings: half PPR swaps the ranking set without touching picks", async ({ page }) => {
   await page.locator("#poolBody tr.row").first().click();          // Team 1 takes Gibbs
+  const before = await page.evaluate(() => ({
+    henry: window.__draft.players.find((p) => p.name === "Derrick Henry").rank,
+    bowers: window.__draft.players.find((p) => p.name === "Brock Bowers").rank
+  }));
   await page.click("#bSettings");
-  for (const id of ["wRW", "wCBS", "wESPN", "wPrior"]) await page.fill("#" + id, "0");
-  await page.fill("#wPFN", "1");
+  await page.selectOption("#sFormat", "half");
   await page.click("#bSaveSettings");
-  const r = await page.evaluate(() => {
+  const after = await page.evaluate(() => {
     const d = window.__draft;
     return {
-      jacobs: d.players.find((p) => p.name === "Josh Jacobs").rank,   // PFN has him 175th
+      henry: d.players.find((p) => p.name === "Derrick Henry").rank,
+      bowers: d.players.find((p) => p.name === "Brock Bowers").rank,
+      rec: d.E.LEAGUE.points.rec,
       picks: d.state.picks.length,
       first: d.players.find((p) => p.id === d.state.picks[0].playerId).name
     };
   });
-  expect(r.jacobs).toBeGreaterThan(120);
-  expect(r.picks).toBe(1);
-  expect(r.first).toBe("Jahmyr Gibbs");
+  // half PPR lifts the volume back, drops the pass-catching tight end
+  expect(after.henry).toBeLessThan(before.henry);
+  expect(after.bowers).toBeGreaterThan(before.bowers);
+  expect(after.rec, "reception value follows the format").toBe(0.5);
+  expect(after.picks).toBe(1);
+  expect(after.first).toBe("Jahmyr Gibbs");
 });
 
 test("your seat drives the header and the default roster", async ({ page }) => {
@@ -529,21 +537,30 @@ test("clicking a team card inspects its roster, clicking again returns to yours"
   await expect(page.locator("#rosterTitle")).toHaveText("You (6)");
 });
 
-test("settings: ADP weight 1 ranks the board purely by market ADP", async ({ page }) => {
+test("settings: half PPR ranks off the half-PPR sources, and reverts cleanly", async ({ page }) => {
+  const ppr = await page.evaluate(() =>
+    window.__draft.players.slice(0, 60).map((p) => p.name).join("|"));
   await page.click("#bSettings");
-  for (const id of ["wRW", "wPFN", "wCBS", "wESPN", "wPrior"]) await page.fill("#" + id, "0");
-  await page.fill("#wADP", "1");
+  await page.selectOption("#sFormat", "half");
   await page.click("#bSaveSettings");
   const r = await page.evaluate(() => {
     const P = window.__draft.players;
-    const withAdp = P.filter((p) => p.src && p.src.adp !== undefined &&
-                                    p.pos !== "DST" && p.pos !== "K")
-                     .sort((a, b) => a.rank - b.rank);
-    let ordered = true;
-    for (let i = 1; i < withAdp.length; i++)
-      if (withAdp[i].src.adp < withAdp[i - 1].src.adp) ordered = false;
-    return { ordered, first: withAdp[0].name };
+    // every player carrying half-PPR data must outrank one that has none but
+    // sits deeper on both boards — i.e. the half set is really driving order
+    const covered = P.filter((p) => p.srcHalf && p.pos !== "DST" && p.pos !== "K");
+    return {
+      order: P.slice(0, 60).map((x) => x.name).join("|"),
+      covered: covered.length,
+      rb1: P.filter((x) => x.pos === "RB")[0].name
+    };
   });
-  expect(r.ordered, "board order matches raw ADP").toBe(true);
-  expect(r.first).toBe("Jahmyr Gibbs");
+  expect(r.covered).toBeGreaterThan(150);
+  expect(r.order).not.toBe(ppr);
+  expect(r.rb1).toBe("Jahmyr Gibbs");
+  await page.click("#bSettings");
+  await page.selectOption("#sFormat", "ppr");
+  await page.click("#bSaveSettings");
+  const back = await page.evaluate(() =>
+    window.__draft.players.slice(0, 60).map((p) => p.name).join("|"));
+  expect(back, "toggling back restores the full-PPR board exactly").toBe(ppr);
 });

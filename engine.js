@@ -27,12 +27,24 @@
     maxPos: { QB:4, RB:8, WR:8, TE:3, K:3, DST:3 },
     benchSlots: 7,
     irSlots: 1,
-    points: { passYd:0.04, passTD:4, int:-2, rushYd:0.1, rec:1, recYd:0.1, td:6, fumble:-2 },
-    /* How much each ranking source counts in the board order. adp is live
-       market data (FantasyFootballCalculator PPR, ~7.8k drafts, Sep 3 2026);
-       the rest are Sep 1 2026 ranking snapshots. All shipped per player in
-       data.js; missing sources renormalize away. All zeros = stored order. */
-    rankWeights: { adp:0.35, rw:0.20, pfn:0.15, prior:0.15, cbs:0.075, espn:0.075 }
+    /* Scoring format drives BOTH the projections and the board order — the
+       same reception value cannot mean one thing to the ranking and another
+       to the recommendation. `rec` is derived from it, never set directly. */
+    format: "ppr",                   // "ppr" (1.0/catch) | "half" (0.5/catch)
+    points: { passYd:0.04, passTD:4, int:-2, rushYd:0.1, rec:1, recYd:0.1, td:6, fumble:-2 }
+  };
+
+  /* One ranking set per format, blended from the sources each player ships
+     with in data.js; missing sources renormalize away.
+       ppr  — adp: FantasyFootballCalculator PPR ADP (~7.8k drafts, Sep 3 2026),
+              rw/pfn/cbs/espn: Sep 1 2026 snapshots, prior: this board's own order.
+       half — adp: FFC half-PPR ADP (~2.9k drafts, Sep 5 2026), ffc: FFC's
+              half-PPR board, rw: RotoWire half-PPR.
+     Half-PPR coverage runs ~200 deep; past that a player falls back to his
+     full-PPR blend, which is the right answer anyway that late. */
+  const SOURCE_WEIGHTS = {
+    ppr:  { adp:0.35, rw:0.20, pfn:0.15, prior:0.15, cbs:0.075, espn:0.075 },
+    half: { adp:0.40, ffc:0.30, rw:0.30 }
   };
   LEAGUE.rounds = LEAGUE.rosterSize;
   LEAGUE.totalPicks = LEAGUE.teams * LEAGUE.rounds;
@@ -110,22 +122,32 @@
      logged picks must survive a re-weighting. */
   const TIER_BY_INDEX = RAW_PLAYERS
     .filter((r) => r[2] !== "DST" && r[2] !== "K").map((r) => r[4]);
-  function blendRank(src, stored) {
-    const W = LEAGUE.rankWeights;
+  function blendOne(src, weights) {
     let tw = 0, acc = 0;
-    if (src) for (const k in W) {
-      if (src[k] !== undefined) { tw += W[k]; acc += W[k] * src[k]; }
+    if (src) for (const k in weights) {
+      if (src[k] !== undefined) { tw += weights[k]; acc += weights[k] * src[k]; }
     }
-    return tw > 0 ? acc / tw : stored;
+    return tw > 0 ? acc / tw : null;
+  }
+  function blendRank(src, srcHalf, stored) {
+    if (LEAGUE.format === "half") {
+      const h = blendOne(srcHalf, SOURCE_WEIGHTS.half);
+      if (h !== null) return h;
+    }
+    const f = blendOne(src, SOURCE_WEIGHTS.ppr);
+    return f !== null ? f : stored;
   }
   function buildPlayers() {
     const raw = RAW_PLAYERS.map((r, i) => {
-      const [stored, name, pos, team, tier, note, flags, src] = r;
+      const [stored, name, pos, team, tier, note, flags, src, srcHalf] = r;
       return {
         id: i + 1, stored, name, pos, team, tier,
-        note: note || "", flags: flags || [], src: src || null,
+        note: note || "", flags: flags || [],
+        src: src || null, srcHalf: srcHalf || null,
         bye: BYES[team] || 0,
-        key: (pos === "DST" || pos === "K") ? 100000 + stored : blendRank(src, stored)
+        key: (pos === "DST" || pos === "K")
+          ? 100000 + stored
+          : blendRank(src, srcHalf, stored)
       };
     });
     raw.sort((a, b) => a.key - b.key || a.stored - b.stored);
@@ -142,7 +164,7 @@
         : TIER_BY_INDEX[Math.min(skillIdx++, TIER_BY_INDEX.length - 1)];
       return {
         id: p.id, rank: idx + 1, name: p.name, pos: p.pos, team: p.team, tier,
-        note: p.note, flags: p.flags, src: p.src,
+        note: p.note, flags: p.flags, src: p.src, srcHalf: p.srcHalf,
         bye: p.bye, posRank,
         proj: Math.round(proj * 10) / 10,
         vor: Math.round(vor * 10) / 10,
@@ -569,8 +591,8 @@
     if (cfg.points) for (const k in LEAGUE.points)
       LEAGUE.points[k] = num(cfg.points[k], -10, 10, LEAGUE.points[k]);
     if (cfg.superflex !== undefined) LEAGUE.superflex = !!cfg.superflex;
-    if (cfg.rankWeights) for (const k in LEAGUE.rankWeights)
-      LEAGUE.rankWeights[k] = num(cfg.rankWeights[k], 0, 1, LEAGUE.rankWeights[k]);
+    if (cfg.format !== undefined) LEAGUE.format = cfg.format === "half" ? "half" : "ppr";
+    LEAGUE.points.rec = LEAGUE.format === "half" ? 0.5 : 1;   // derived, not set
 
     const S = LEAGUE.starters;
     LEAGUE.starterCount = S.QB + S.RB + S.WR + S.TE + S.FLEX + S.K + S.DST;
@@ -618,14 +640,14 @@
       name: LEAGUE.name, teams: LEAGUE.teams, mySeat: LEAGUE.mySeat,
       rosterSize: LEAGUE.rosterSize, starters: LEAGUE.starters,
       maxPos: LEAGUE.maxPos, points: LEAGUE.points, superflex: LEAGUE.superflex,
-      rankWeights: LEAGUE.rankWeights
+      format: LEAGUE.format
     }));
   }
   configure({});
 
   return {
     LEAGUE, CURVES, REPLACEMENT_RANK, POS_ADJ, BOT_MAX, TIERS, BYES,
-    configure, getConfig, DEFAULT_POINTS, POS_SCALE,
+    configure, getConfig, DEFAULT_POINTS, POS_SCALE, SOURCE_WEIGHTS,
     curveValue, buildPlayers,
     seatForPick, roundForPick, pickForSeatRound, myPicks, nextPickForSeat,
     countsFor, emptyCounts, buildLineup, starterDeficit, needMultiplier, forcedBonus, rankPrior,
